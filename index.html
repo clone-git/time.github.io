@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倒计时</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .countdown-container {
+            text-align: center;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .countdown-item {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .countdown-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .countdown-label {
+            font-size: 16px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">        
+        <div class="countdown-item">
+            <div class="countdown-value" id="days">计算中...</div>
+            <div class="countdown-label">总天数</div>
+        </div>
+        
+        <div class="countdown-item">
+            <div class="countdown-value" id="hours">计算中...</div>
+            <div class="countdown-label">总小时数</div>
+        </div>
+        
+        <div class="countdown-item">
+            <div class="countdown-value" id="seconds">计算中...</div>
+            <div class="countdown-label">总秒数</div>
+        </div>
+        
+        <div class="countdown-item">
+            <div class="countdown-value" id="milliseconds">计算中...</div>
+            <div class="countdown-label">总毫秒数</div>
+        </div>
+    </div>
+
+    <script>
+        // 设置目标日期：2025年12月1日
+        const targetDate = new Date('2025-12-01T00:00:00');
+        
+        function updateCountdown() {
+            // 获取当前日期和时间
+            const currentDate = new Date();
+            
+            // 计算时间差（毫秒）
+            const timeDifference = targetDate - currentDate;
+            
+            // 计算总天数、总小时数、总秒数和总毫秒数
+            const totalDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const totalHours = Math.floor(timeDifference / (1000 * 60 * 60));
+            const totalSeconds = Math.floor(timeDifference / 1000);
+            const totalMilliseconds = timeDifference;
+            
+            // 更新显示
+            document.getElementById('days').textContent = totalDays.toLocaleString('zh-CN');
+            document.getElementById('hours').textContent = totalHours.toLocaleString('zh-CN');
+            document.getElementById('seconds').textContent = totalSeconds.toLocaleString('zh-CN');
+            document.getElementById('milliseconds').textContent = totalMilliseconds.toLocaleString('zh-CN');
+        }
+        
+        // 立即更新一次
+        updateCountdown();
+        
+        // 每10毫秒更新一次，以便毫秒显示更流畅
+        setInterval(updateCountdown, 10);
+    </script>
+</body>
+</html>
