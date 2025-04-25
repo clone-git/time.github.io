@@ -38,6 +38,9 @@
             font-size: 24px;
             font-weight: bold;
             color: #007bff;
+            min-width: 200px;
+            display: inline-block;
+            text-align: center;
         }
         .countdown-label {
             font-size: 16px;
@@ -73,6 +76,18 @@
         // 设置目标日期：2025年12月1日
         const targetDate = new Date('2025-12-01T00:00:00');
         
+        // 格式化数字函数，保持一致的宽度
+        function formatNumber(number) {
+            return number.toLocaleString('zh-CN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+                useGrouping: true
+            });
+        }
+        
+        // 上次更新的毫秒值
+        let lastMilliseconds = 0;
+        
         function updateCountdown() {
             // 获取当前日期和时间
             const currentDate = new Date();
@@ -84,20 +99,24 @@
             const totalDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
             const totalHours = Math.floor(timeDifference / (1000 * 60 * 60));
             const totalSeconds = Math.floor(timeDifference / 1000);
-            const totalMilliseconds = timeDifference;
             
-            // 更新显示
-            document.getElementById('days').textContent = totalDays.toLocaleString('zh-CN');
-            document.getElementById('hours').textContent = totalHours.toLocaleString('zh-CN');
-            document.getElementById('seconds').textContent = totalSeconds.toLocaleString('zh-CN');
-            document.getElementById('milliseconds').textContent = totalMilliseconds.toLocaleString('zh-CN');
+            // 更新显示（天、小时、秒）
+            document.getElementById('days').textContent = formatNumber(totalDays);
+            document.getElementById('hours').textContent = formatNumber(totalHours);
+            document.getElementById('seconds').textContent = formatNumber(totalSeconds);
+            
+            // 只有当毫秒值变化超过100毫秒时才更新，减少抖动
+            if (Math.abs(timeDifference - lastMilliseconds) >= 100) {
+                document.getElementById('milliseconds').textContent = formatNumber(timeDifference);
+                lastMilliseconds = timeDifference;
+            }
         }
         
         // 立即更新一次
         updateCountdown();
         
-        // 每10毫秒更新一次，以便毫秒显示更流畅
-        setInterval(updateCountdown, 10);
+        // 每50毫秒更新一次，平衡流畅性和性能
+        setInterval(updateCountdown, 50);
     </script>
 </body>
 </html>
