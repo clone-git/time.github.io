@@ -150,6 +150,11 @@
         </div>
         
         <div class="countdown-item">
+            <div class="countdown-value" id="minutes">计算中...</div>
+            <div class="countdown-label">总分钟数</div>
+        </div>
+        
+        <div class="countdown-item">
             <div class="countdown-value" id="seconds">计算中...</div>
             <div class="countdown-label">总秒数</div>
         </div>
@@ -199,14 +204,16 @@
             // 计算时间差（毫秒）
             const timeDifference = targetDate - currentDate;
             
-            // 计算总天数、总小时数、总秒数和总毫秒数
+            // 计算总天数、总小时数、总分钟数、总秒数和总毫秒数
             const totalDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
             const totalHours = Math.floor(timeDifference / (1000 * 60 * 60));
+            const totalMinutes = Math.floor(timeDifference / (1000 * 60));
             const totalSeconds = Math.floor(timeDifference / 1000);
             
-            // 更新显示（天、小时、秒）
+            // 更新显示（天、小时、分钟、秒）
             document.getElementById('days').textContent = formatNumber(totalDays);
             document.getElementById('hours').textContent = formatNumber(totalHours);
+            document.getElementById('minutes').textContent = formatNumber(totalMinutes);
             document.getElementById('seconds').textContent = formatNumber(totalSeconds);
             
             // 只有当毫秒值变化超过100毫秒时才更新，减少抖动
