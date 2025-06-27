@@ -768,9 +768,6 @@
             const currentDate = new Date();
             const timeDifference = targetDate - currentDate;
             
-            // 计算总时长（从开始到现在）
-            const totalElapsed = currentDate - startDate;
-            
             // 如果时间已过，显示已结束
             if (timeDifference <= 0) {
                 document.getElementById('days').textContent = '0';
@@ -779,8 +776,8 @@
                 document.getElementById('seconds').textContent = '0';
                 document.querySelector('.subtitle').textContent = '目标时间已到达！';
                 
-                // 更新总时长显示
-                updateTotalTime(totalElapsed);
+                // 更新总时长显示（倒计时结束）
+                updateTotalTime(0);
                 
                 updateProgressBar(100);
                 return;
@@ -812,25 +809,25 @@
                 secondsElement.textContent = formatNumber(seconds);
             }
             
-            // 更新总时长显示
-            updateTotalTime(totalElapsed);
+            // 更新总时长显示（倒计时）
+            updateTotalTime(timeDifference);
             
             // 更新进度条
             updateProgressBar();
         }
         
-        // 更新总时长显示函数
-        function updateTotalTime(totalElapsed) {
-            if (totalElapsed <= 0) {
+        // 更新总时长显示函数（倒计时）
+        function updateTotalTime(distance) {
+            if (distance <= 0) {
                 document.getElementById('total-hours').textContent = '0';
                 document.getElementById('total-minutes').textContent = '0';
                 document.getElementById('total-seconds').textContent = '0';
                 return;
             }
             
-            const totalHours = Math.floor(totalElapsed / (1000 * 60 * 60));
-            const totalMinutes = Math.floor(totalElapsed / (1000 * 60));
-            const totalSeconds = Math.floor(totalElapsed / 1000);
+            const totalHours = Math.floor(distance / (1000 * 60 * 60));
+            const totalMinutes = Math.floor(distance / (1000 * 60));
+            const totalSeconds = Math.floor(distance / 1000);
             
             const totalHoursElement = document.getElementById('total-hours');
             const totalMinutesElement = document.getElementById('total-minutes');
