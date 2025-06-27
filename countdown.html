@@ -18,6 +18,7 @@
             --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             --border-radius: 16px;
             --border-radius-small: 12px;
+            --vh: 1vh;
         }
         
         * {
@@ -41,7 +42,11 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            min-height: calc(var(--vh, 1vh) * 100);
+            min-height: -webkit-fill-available;
+            padding: 16px;
+            overflow-y: auto;
+            position: relative;
         }
         
         .countdown-container {
@@ -50,15 +55,20 @@
             box-shadow: var(--shadow-large);
             width: 100%;
             max-width: 480px;
-            padding: 32px 24px;
+            padding: 24px 20px;
             position: relative;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: auto;
+            max-height: calc(100vh - 32px);
+            max-height: calc(var(--vh, 1vh) * 100 - 32px);
+            max-height: calc(-webkit-fill-available - 32px);
+            overflow-y: auto;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
         
         .title {
@@ -80,8 +90,51 @@
         .countdown-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 32px;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .total-time-section {
+            background: linear-gradient(135deg, #fef7e0 0%, #fed7aa 100%);
+            border-radius: var(--border-radius-small);
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .total-time-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .total-time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .total-time-item {
+            text-align: center;
+            padding: 8px 4px;
+        }
+        
+        .total-time-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #d97706;
+            margin-bottom: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .total-time-label {
+            font-size: 11px;
+            color: #92400e;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
         
         .countdown-item {
@@ -192,6 +245,82 @@
             color: var(--text-secondary);
         }
         
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+            }
+            
+            .countdown-container {
+                padding: 20px 16px;
+                margin: 0;
+                max-height: calc(100vh - 24px);
+                max-height: calc(-webkit-fill-available - 24px);
+            }
+            
+            .title {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+            
+            .subtitle {
+                font-size: 13px;
+                margin-bottom: 16px;
+            }
+            
+            .countdown-value {
+                font-size: 26px;
+            }
+            
+            .countdown-label {
+                font-size: 11px;
+            }
+            
+            .countdown-grid {
+                gap: 10px;
+                margin-bottom: 16px;
+            }
+            
+            .total-time-section {
+                padding: 12px;
+                margin-bottom: 16px;
+            }
+            
+            .total-time-title {
+                font-size: 13px;
+                margin-bottom: 10px;
+            }
+            
+            .total-time-value {
+                font-size: 14px;
+            }
+            
+            .total-time-label {
+                font-size: 10px;
+            }
+            
+            .progress-section {
+                padding: 12px;
+            }
+            
+            .progress-title {
+                font-size: 13px;
+            }
+        }
+        
+        /* Safari iOS 特殊适配 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                min-height: -webkit-fill-available;
+            }
+            
+            .countdown-container {
+                max-height: calc(-webkit-fill-available - 32px);
+            }
+        }
+        
         /* iPhone XR 适配 (414x896) */
         @media screen and (max-width: 414px) and (max-height: 896px) {
             body {
@@ -230,6 +359,26 @@
             
             .progress-section {
                 padding: 20px;
+            }
+        }
+        
+        /* iPhone XR 特殊适配 */
+        @media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+            body {
+                padding: 10px;
+            }
+            
+            .countdown-container {
+                padding: 18px 14px;
+                max-height: calc(100vh - 20px);
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .countdown-value {
+                font-size: 24px;
             }
         }
         
@@ -324,6 +473,26 @@
             </div>
         </div>
         
+        <div class="total-time-section">
+            <div class="total-time-title">总计时间</div>
+            <div class="total-time-grid">
+                <div class="total-time-item">
+                    <div class="total-time-value" id="total-hours">--</div>
+                    <div class="total-time-label">总小时</div>
+                </div>
+                
+                <div class="total-time-item">
+                    <div class="total-time-value" id="total-minutes">--</div>
+                    <div class="total-time-label">总分钟</div>
+                </div>
+                
+                <div class="total-time-item">
+                    <div class="total-time-value" id="total-seconds">--</div>
+                    <div class="total-time-label">总秒数</div>
+                </div>
+            </div>
+        </div>
+        
         <div class="progress-section">
             <div class="progress-header">
                 <span class="progress-title">进度</span>
@@ -391,6 +560,9 @@
             const currentDate = new Date();
             const timeDifference = targetDate - currentDate;
             
+            // 计算总时长（从开始到现在）
+            const totalElapsed = currentDate - startDate;
+            
             // 如果时间已过，显示已结束
             if (timeDifference <= 0) {
                 document.getElementById('days').textContent = '0';
@@ -398,6 +570,10 @@
                 document.getElementById('minutes').textContent = '0';
                 document.getElementById('seconds').textContent = '0';
                 document.querySelector('.subtitle').textContent = '目标时间已到达！';
+                
+                // 更新总时长显示
+                updateTotalTime(totalElapsed);
+                
                 updateProgressBar(100);
                 return;
             }
@@ -428,8 +604,39 @@
                 secondsElement.textContent = formatNumber(seconds);
             }
             
+            // 更新总时长显示
+            updateTotalTime(totalElapsed);
+            
             // 更新进度条
             updateProgressBar();
+        }
+        
+        // 更新总时长显示函数
+        function updateTotalTime(totalElapsed) {
+            if (totalElapsed <= 0) {
+                document.getElementById('total-hours').textContent = '0';
+                document.getElementById('total-minutes').textContent = '0';
+                document.getElementById('total-seconds').textContent = '0';
+                return;
+            }
+            
+            const totalHours = Math.floor(totalElapsed / (1000 * 60 * 60));
+            const totalMinutes = Math.floor(totalElapsed / (1000 * 60));
+            const totalSeconds = Math.floor(totalElapsed / 1000);
+            
+            const totalHoursElement = document.getElementById('total-hours');
+            const totalMinutesElement = document.getElementById('total-minutes');
+            const totalSecondsElement = document.getElementById('total-seconds');
+            
+            if (totalHoursElement.textContent !== formatNumber(totalHours)) {
+                totalHoursElement.textContent = formatNumber(totalHours);
+            }
+            if (totalMinutesElement.textContent !== formatNumber(totalMinutes)) {
+                totalMinutesElement.textContent = formatNumber(totalMinutes);
+            }
+            if (totalSecondsElement.textContent !== formatNumber(totalSeconds)) {
+                totalSecondsElement.textContent = formatNumber(totalSeconds);
+            }
         }
         
         // 更新进度条
@@ -478,7 +685,39 @@
         // 窗口获得焦点时更新
         window.addEventListener('focus', updateCountdown);
         
-        // 防止页面缩放
+        // 防止页面缩放和优化Safari兼容性
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Safari iOS 视口高度修复
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+        setViewportHeight();
+        
+        // 防止Safari回弹效果
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
