@@ -2,9 +2,24 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>时间倒计时</title>
     <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-primary: #f7fafc;
+            --bg-secondary: #ffffff;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --border-radius: 16px;
+            --border-radius-small: 12px;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,167 +29,314 @@
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden;
-            font-family: 'Microsoft YaHei', sans-serif;
-            background-color: #f5f5f5;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
         }
         
         body {
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
         
         .countdown-container {
-            text-align: center;
-            background-color: white;
-            padding: 5vh 5vw;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 800px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-large);
+            width: 100%;
+            max-width: 480px;
+            padding: 32px 24px;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 2vh;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        @media (max-width: 768px) {
-            .countdown-container {
-                width: 95%;
-                padding: 3vh 3vw;
-            }
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
         }
         
-        h1 {
-            color: #333;
-            margin-bottom: 2vh;
-            font-size: clamp(1.5rem, 3vw, 2.5rem);
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
         }
         
         .countdown-item {
-            margin: 1vh 0;
-            padding: 1.5vh 1.5vw;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: var(--border-radius-small);
+            padding: 20px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .countdown-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+        
+        .countdown-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
         }
         
         .countdown-value {
-            font-size: clamp(1rem, 4vw, 1.5rem);
-            font-weight: bold;
-            color: #007bff;
-            display: inline-block;
-            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-variant-numeric: tabular-nums;
         }
         
         .countdown-label {
-            font-size: clamp(0.8rem, 2vw, 1rem);
-            color: #6c757d;
-            margin-top: 0.5vh;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* 能量条样式 */
-        .energy-bar-wrapper {
-            position: absolute;
-            right: -10vw;
-            top: 0;
-            height: 100%;
+        .progress-section {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: var(--border-radius-small);
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .progress-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 16px;
         }
         
-        .energy-bar-container {
-            height: 80%;
-            width: 30px;
-            background-color: #f0f0f0;
-            border-radius: 15px;
+        .progress-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .progress-percentage {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
             overflow: hidden;
+            margin-bottom: 12px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 4px;
+            transition: width 0.5s ease;
             position: relative;
         }
         
-        .energy-bar {
+        .progress-bar::after {
+            content: '';
             position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
             bottom: 0;
-            width: 100%;
-            background: linear-gradient(to top, #4caf50, #8bc34a, #cddc39);
-            border-radius: 0 0 15px 15px;
-            transition: height 0.5s ease;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
         }
         
-        .energy-dates {
-            height: 80%;
-            margin-left: 10px;
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-dates {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-            color: #666;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
         
-        .energy-date {
-            text-align: left;
+        /* iPhone XR 适配 (414x896) */
+        @media screen and (max-width: 414px) and (max-height: 896px) {
+            body {
+                padding: 16px;
+            }
+            
+            .countdown-container {
+                padding: 24px 20px;
+                max-width: 100%;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .countdown-grid {
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+            
+            .countdown-item {
+                padding: 16px 12px;
+            }
+            
+            .countdown-value {
+                font-size: 20px;
+            }
+            
+            .countdown-label {
+                font-size: 12px;
+            }
+            
+            .progress-section {
+                padding: 20px;
+            }
         }
         
-        @media (max-width: 768px) {
-            .energy-bar-wrapper {
-                position: relative;
-                right: 0;
-                height: 20vh;
-                width: 100%;
-                margin-top: 2vh;
-                justify-content: center;
+        /* 通用移动端适配 */
+        @media (max-width: 480px) {
+            .countdown-container {
+                margin: 10px;
             }
             
-            .energy-bar-container {
-                height: 100%;
-                width: 20px;
+            .countdown-grid {
+                grid-template-columns: 1fr;
             }
             
-            .energy-dates {
-                height: 100%;
+            .countdown-item {
+                padding: 24px 20px;
+            }
+            
+            .countdown-value {
+                font-size: 32px;
+            }
+            
+            .countdown-label {
+                font-size: 16px;
+            }
+        }
+        
+        /* 横屏适配 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            body {
+                padding: 10px;
+            }
+            
+            .countdown-container {
+                padding: 20px;
+                max-width: 90vw;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .countdown-grid {
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* 深色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f7fafc;
+                --text-secondary: #a0aec0;
+                --bg-primary: #1a202c;
+                --bg-secondary: #2d3748;
+            }
+            
+            .countdown-item {
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            }
+            
+            .progress-section {
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
             }
         }
     </style>
 </head>
 <body>
-    <div class="countdown-container">        
-        <div class="countdown-item">
-            <div class="countdown-value" id="days">计算中...</div>
-            <div class="countdown-label">总天数</div>
+    <div class="countdown-container">
+        <div class="header">
+            <h1 class="title">时间倒计时</h1>
+            <p class="subtitle">距离目标时间还有</p>
         </div>
         
-        <div class="countdown-item">
-            <div class="countdown-value" id="hours">计算中...</div>
-            <div class="countdown-label">总小时数</div>
-        </div>
-        
-        <div class="countdown-item">
-            <div class="countdown-value" id="minutes">计算中...</div>
-            <div class="countdown-label">总分钟数</div>
-        </div>
-        
-        <div class="countdown-item">
-            <div class="countdown-value" id="seconds">计算中...</div>
-            <div class="countdown-label">总秒数</div>
-        </div>
-        
-        <div class="countdown-item">
-            <div class="countdown-value" id="milliseconds">计算中...</div>
-            <div class="countdown-label">总毫秒数</div>
-        </div>
-        
-        <!-- 能量条包装器 -->
-        <div class="energy-bar-wrapper">
-            <!-- 能量条容器 -->
-            <div class="energy-bar-container">
-                <div class="energy-bar" id="energy-bar"></div>
+        <div class="countdown-grid">
+            <div class="countdown-item">
+                <div class="countdown-value" id="days">--</div>
+                <div class="countdown-label">天</div>
             </div>
             
-            <!-- 能量条日期标记 -->
-            <div class="energy-dates">
-                <div class="energy-date">结束</div>
-                <div class="energy-date">开始</div>
+            <div class="countdown-item">
+                <div class="countdown-value" id="hours">--</div>
+                <div class="countdown-label">小时</div>
+            </div>
+            
+            <div class="countdown-item">
+                <div class="countdown-value" id="minutes">--</div>
+                <div class="countdown-label">分钟</div>
+            </div>
+            
+            <div class="countdown-item">
+                <div class="countdown-value" id="seconds">--</div>
+                <div class="countdown-label">秒</div>
+            </div>
+        </div>
+        
+        <div class="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">进度</span>
+                <span class="progress-percentage" id="progress-percentage">0%</span>
+            </div>
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+            </div>
+            
+            <div class="progress-dates">
+                <span>2025-04-25</span>
+                <span>2025-12-01</span>
             </div>
         </div>
     </div>
@@ -185,8 +347,9 @@
         // 设置起始日期：2025年4月25日
         const startDate = new Date('2025-04-25T00:00:00');
         
-        // 格式化数字函数，保持一致的宽度
+        // 格式化数字函数
         function formatNumber(number) {
+            if (number < 0) return '0';
             return number.toLocaleString('zh-CN', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
@@ -194,64 +357,138 @@
             });
         }
         
-        // 上次更新的毫秒值
-        let lastMilliseconds = 0;
-        
-        function updateCountdown() {
-            // 获取当前日期和时间
-            const currentDate = new Date();
-            
-            // 计算时间差（毫秒）
-            const timeDifference = targetDate - currentDate;
-            
-            // 计算总天数、总小时数、总分钟数、总秒数和总毫秒数
-            const totalDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-            const totalHours = Math.floor(timeDifference / (1000 * 60 * 60));
-            const totalMinutes = Math.floor(timeDifference / (1000 * 60));
-            const totalSeconds = Math.floor(timeDifference / 1000);
-            
-            // 更新显示（天、小时、分钟、秒）
-            document.getElementById('days').textContent = formatNumber(totalDays);
-            document.getElementById('hours').textContent = formatNumber(totalHours);
-            document.getElementById('minutes').textContent = formatNumber(totalMinutes);
-            document.getElementById('seconds').textContent = formatNumber(totalSeconds);
-            
-            // 只有当毫秒值变化超过100毫秒时才更新，减少抖动
-            if (Math.abs(timeDifference - lastMilliseconds) >= 100) {
-                document.getElementById('milliseconds').textContent = formatNumber(timeDifference);
-                lastMilliseconds = timeDifference;
-            }
-            
-            // 更新能量条
-            updateEnergyBar(currentDate);
+        // 格式化百分比
+        function formatPercentage(percentage) {
+            return Math.round(percentage * 10) / 10 + '%';
         }
         
-        function updateEnergyBar(currentDate) {
-            // 计算总时间跨度（毫秒）
-            const totalTimeSpan = targetDate - startDate;
+        // 添加数字动画效果
+        function animateNumber(element, targetValue, duration = 500) {
+            const startValue = parseInt(element.textContent.replace(/,/g, '')) || 0;
+            const difference = targetValue - startValue;
+            const startTime = performance.now();
             
-            // 计算已经过去的时间（毫秒）
+            function updateValue(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 使用缓动函数
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const currentValue = Math.round(startValue + difference * easeOutQuart);
+                
+                element.textContent = formatNumber(currentValue);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateValue);
+                }
+            }
+            
+            requestAnimationFrame(updateValue);
+        }
+        
+        // 主要更新函数
+        function updateCountdown() {
+            const currentDate = new Date();
+            const timeDifference = targetDate - currentDate;
+            
+            // 如果时间已过，显示已结束
+            if (timeDifference <= 0) {
+                document.getElementById('days').textContent = '0';
+                document.getElementById('hours').textContent = '0';
+                document.getElementById('minutes').textContent = '0';
+                document.getElementById('seconds').textContent = '0';
+                document.querySelector('.subtitle').textContent = '目标时间已到达！';
+                updateProgressBar(100);
+                return;
+            }
+            
+            // 计算剩余时间的各个单位
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+            
+            // 更新显示
+            const daysElement = document.getElementById('days');
+            const hoursElement = document.getElementById('hours');
+            const minutesElement = document.getElementById('minutes');
+            const secondsElement = document.getElementById('seconds');
+            
+            // 只在值发生变化时更新，避免不必要的重绘
+            if (daysElement.textContent !== formatNumber(days)) {
+                daysElement.textContent = formatNumber(days);
+            }
+            if (hoursElement.textContent !== formatNumber(hours)) {
+                hoursElement.textContent = formatNumber(hours);
+            }
+            if (minutesElement.textContent !== formatNumber(minutes)) {
+                minutesElement.textContent = formatNumber(minutes);
+            }
+            if (secondsElement.textContent !== formatNumber(seconds)) {
+                secondsElement.textContent = formatNumber(seconds);
+            }
+            
+            // 更新进度条
+            updateProgressBar();
+        }
+        
+        // 更新进度条
+        function updateProgressBar() {
+            const currentDate = new Date();
+            const totalTimeSpan = targetDate - startDate;
             const elapsedTime = currentDate - startDate;
             
             // 计算进度百分比（0-100）
             let progressPercentage = (elapsedTime / totalTimeSpan) * 100;
-            
-            // 确保百分比在有效范围内
             progressPercentage = Math.max(0, Math.min(100, progressPercentage));
             
-            // 更新能量条高度
-            document.getElementById('energy-bar').style.height = progressPercentage + '%';
+            // 更新进度条宽度
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-percentage');
+            
+            progressBar.style.width = progressPercentage + '%';
+            progressText.textContent = formatPercentage(progressPercentage);
         }
         
-        // 立即更新一次
-        updateCountdown();
-        
-        // 每50毫秒更新一次，平衡流畅性和性能
-        setInterval(updateCountdown, 50);
-        
-        // 设置页面大小调整时重新计算布局
-        window.addEventListener('resize', function() {
+        // 初始化页面
+        function initializePage() {
+            // 设置初始值
+            document.getElementById('days').textContent = '--';
+            document.getElementById('hours').textContent = '--';
+            document.getElementById('minutes').textContent = '--';
+            document.getElementById('seconds').textContent = '--';
+            
+            // 立即更新一次
             updateCountdown();
+            
+            // 每秒更新一次，优化性能
+            setInterval(updateCountdown, 1000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+        
+        // 页面可见性变化时更新（用户切换标签页时）
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCountdown();
+            }
+        });
+        
+        // 窗口获得焦点时更新
+        window.addEventListener('focus', updateCountdown);
+        
+        // 防止页面缩放
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
