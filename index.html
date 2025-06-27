@@ -382,8 +382,96 @@
             }
         }
         
-        /* 通用移动端适配 */
-        @media (max-width: 480px) {
+        /* 425px屏幕专门适配 */
+        @media (max-width: 425px) {
+            body {
+                padding: 8px;
+            }
+            
+            .countdown-container {
+                padding: 16px 12px;
+                margin: 0;
+                max-width: 100%;
+                border-radius: 12px;
+            }
+            
+            .title {
+                font-size: 18px;
+                margin-bottom: 6px;
+                line-height: 1.3;
+            }
+            
+            .subtitle {
+                font-size: 12px;
+                margin-bottom: 14px;
+            }
+            
+            .countdown-grid {
+                gap: 8px;
+                margin-bottom: 14px;
+            }
+            
+            .countdown-item {
+                padding: 12px 8px;
+                min-height: 70px;
+            }
+            
+            .countdown-value {
+                font-size: 22px;
+                margin-bottom: 4px;
+            }
+            
+            .countdown-label {
+                font-size: 10px;
+            }
+            
+            .total-time-section {
+                padding: 10px;
+                margin-bottom: 14px;
+            }
+            
+            .total-time-title {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .total-time-grid {
+                gap: 6px;
+            }
+            
+            .total-time-item {
+                padding: 6px 4px;
+            }
+            
+            .total-time-value {
+                font-size: 13px;
+            }
+            
+            .total-time-label {
+                font-size: 9px;
+            }
+            
+            .progress-section {
+                padding: 10px;
+            }
+            
+            .progress-title {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .progress-container {
+                height: 6px;
+            }
+            
+            .progress-text {
+                font-size: 11px;
+                margin-top: 6px;
+            }
+        }
+        
+        /* 通用小屏幕适配 */
+        @media (max-width: 480px) and (min-width: 426px) {
             .countdown-container {
                 margin: 10px;
             }
@@ -442,7 +530,127 @@
                 background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
             }
         }
-    </style>
+        
+        /* 超小屏幕适配 (320px-374px) */
+        @media (max-width: 374px) {
+            body {
+                padding: 6px;
+            }
+            
+            .countdown-container {
+                padding: 12px 8px;
+                border-radius: 8px;
+            }
+            
+            .title {
+                font-size: 16px;
+                margin-bottom: 4px;
+            }
+            
+            .subtitle {
+                font-size: 11px;
+                margin-bottom: 12px;
+            }
+            
+            .countdown-grid {
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+            
+            .countdown-item {
+                padding: 10px 6px;
+                min-height: 65px;
+            }
+            
+            .countdown-value {
+                font-size: 20px;
+            }
+            
+            .countdown-label {
+                font-size: 9px;
+            }
+            
+            .total-time-section {
+                padding: 8px;
+                margin-bottom: 12px;
+            }
+            
+            .total-time-title {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+            
+            .total-time-value {
+                font-size: 12px;
+            }
+            
+            .total-time-label {
+                font-size: 8px;
+            }
+            
+            .progress-section {
+                padding: 8px;
+            }
+            
+            .progress-title {
+                font-size: 11px;
+            }
+            
+            .progress-text {
+                 font-size: 10px;
+             }
+         }
+         
+         /* 横屏模式适配 */
+         @media (orientation: landscape) and (max-height: 500px) {
+             body {
+                 padding: 8px;
+             }
+             
+             .countdown-container {
+                 padding: 16px;
+                 max-height: calc(100vh - 16px);
+             }
+             
+             .header {
+                 margin-bottom: 16px;
+             }
+             
+             .title {
+                 font-size: 18px;
+                 margin-bottom: 4px;
+             }
+             
+             .subtitle {
+                 font-size: 12px;
+                 margin-bottom: 12px;
+             }
+             
+             .countdown-grid {
+                 margin-bottom: 12px;
+             }
+             
+             .total-time-section {
+                 margin-bottom: 12px;
+             }
+         }
+         
+         /* 确保最小宽度支持 */
+         @media (max-width: 320px) {
+             .countdown-container {
+                 min-width: 280px;
+                 padding: 10px 6px;
+             }
+             
+             .countdown-grid {
+                 grid-template-columns: repeat(2, minmax(0, 1fr));
+             }
+             
+             .total-time-grid {
+                 grid-template-columns: repeat(3, minmax(0, 1fr));
+             }
+         }
+     </style>
 </head>
 <body>
     <div class="countdown-container">
