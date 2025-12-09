@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专注力警示牌 & 番茄时钟</title>
+    <title>专注力</title>
     <style>
         :root {
             /* 白天模式变量 */
@@ -145,13 +145,14 @@
                 margin-right: 4px !important;
             }
 
-            /* 警示牌区域：占据剩余所有空间 */
+            /* 警示牌区域：自适应高度，不强行撑满 */
             .board-card {
-                flex: 1;
+                flex: 0 1 auto; /* 允许根据内容调整高度，也允许压缩 */
                 overflow: hidden; /* 内部溢出隐藏或滚动 */
                 display: flex;
                 flex-direction: column;
                 padding: 12px !important;
+                max-height: 100%; /* 防止溢出父容器 */
             }
 
             .board-card h1 {
@@ -288,7 +289,7 @@
         .board-list {
             list-style: none;
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr); /* 默认双列布局 */
             gap: 15px;
         }
 
@@ -491,9 +492,9 @@
 
     <!-- 番茄时钟区域 -->
     <div class="card clock-card mode-work" id="clockCard">
-        <h2>🍅 番茄时钟</h2>
+        <h2>🍅 时钟</h2>
         <div class="timer-area">
-            <div class="status-badge" id="statusText">工作中 - 保持专注</div>
+            <div class="status-badge" id="statusText">学习中 - 保持专注</div>
             <div class="timer-display" id="timer">25:00</div>
         </div>
         
@@ -633,7 +634,7 @@
         
         startBtn.textContent = '开始计时';
         updateDisplay();
-        document.title = '专注力警示牌 & 番茄时钟';
+        document.title = '专注力';
     }
 
     function handleTimerComplete() {
@@ -693,7 +694,7 @@
     }
 
     function getStatusLabel() {
-        if (currentMode === 'work') return '工作中';
+        if (currentMode === 'work') return '学习中';
         return '休息中';
     }
 
