@@ -384,6 +384,12 @@
             color: var(--btn-reset-color);
         }
 
+        .btn-theme {
+            background-color: transparent;
+            border: 2px solid var(--btn-reset-bg);
+            color: var(--text-color);
+        }
+
         .pomodoro-stats {
             display: flex;
             gap: 8px;
@@ -505,6 +511,7 @@
         <div class="controls">
             <button class="btn-start" id="startBtn" onclick="toggleTimer()">开始计时</button>
             <button class="btn-reset" onclick="resetTimer()">重置</button>
+            <button class="btn-theme" onclick="toggleTheme()">主题</button>
         </div>
 
         <div class="stats-wrapper">
@@ -558,8 +565,11 @@
         updateStats();
     }
     
-    // 每分钟检查一次主题
-    setInterval(checkTheme, 60000);
+    // 每分钟检查一次主题 (如果用户手动切换过，则不再自动检查)
+    let isAutoTheme = true;
+    setInterval(() => {
+        if (isAutoTheme) checkTheme();
+    }, 60000);
     // 每天更新一次进度条
     setInterval(updateLifeProgress, 86400000);
 
@@ -689,6 +699,11 @@
         }
     }
 
+    function toggleTheme() {
+        isAutoTheme = false; // 禁用自动切换
+        document.body.classList.toggle('dark-mode');
+    }
+
     function initStats() {
         statsContainer.innerHTML = '';
         for (let i = 0; i < 16; i++) {
@@ -743,15 +758,30 @@
 
     function resetTimer() {
         pauseTimer();
-        // 重置为当前模式的初始时间
-        if (currentMode === 'work') timeLeft = WORK_TIME;
-        else if (currentMode === 'shortBreak') timeLeft = SHORT_BREAK;
-        else timeLeft = LONG_BREAK;
         
+        // 1. 重置番茄数据
+        completedPomodoros = 0;
+        localStorage.removeItem('pomodoroData');
+        updateStats();
+
+        // 2. 重置计时器状态缓存
+        localStorage.removeItem('timerState');
+
+        // 3. 重置为 Work 模式初始时间
+        currentMode = 'work';
+        timeLeft = WORK_TIME;
+        
+        // 4. 重置 UI
         startBtn.textContent = '开始计时';
+        statusText.textContent = '学习中 - 保持专注';
+        clockCard.className = 'card clock-card mode-work';
+        
         updateDisplay();
         document.title = '专注力';
-        // 保存重置后的状态 (isRunning = false)
+        
+        // 注意：这里我们不再调用 saveTimerState()，因为我们希望它是“干净”的。
+        // 或者我们可以保存一个初始状态，防止刷新后又回到之前的状态（如果 clear 没生效的话，但 removeItem 应该够了）
+        // 为了保险，我们可以保存一个“未开始”的初始状态
         saveTimerState();
     }
 
