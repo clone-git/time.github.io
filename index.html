@@ -45,13 +45,16 @@
             padding: 0;
         }
 
+        html, body {
+            height: 100%; /* 使用百分比代替 vh，实现自适应 */
+            width: 100%;
+        }
+
         body {
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.4;
-            height: 100vh; /* 强制占满视口高度 */
-            width: 100vw;
             overflow: hidden; /* 禁止页面滚动 */
             display: flex;
             justify-content: center;
