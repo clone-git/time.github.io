@@ -436,56 +436,60 @@
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progressBar"></div>
             </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px;">
+                <span id="startDateDisplay"></span>
+                <span id="endDateDisplay"></span>
+            </div>
         </div>
 
         <div class="board-list">
             <div class="board-item">
-                <strong>作息规律</strong>
-                <span>保证睡眠质量，精力充沛</span>
+                <strong>二十四史</strong>
+                <span>最好有时间看</span>
             </div>
             <div class="board-item">
-                <strong>饮食健康</strong>
-                <span>清淡饮食，充足饮水，保持活力</span>
+                <strong>资治通鉴</strong>
+                <span>是本好书,希望有时间看</span>
             </div>
             <div class="board-item">
-                <strong>屏蔽干扰</strong>
-                <span>远离手机、游戏及无关琐事</span>
+                <strong>去网吧玩玩</strong>
+                <span>想去网吧玩玩、可惜没时间</span>
             </div>
             <div class="board-item">
-                <strong>每日回顾</strong>
-                <span>总结今日进展，复盘遇到的困难</span>
+                <strong>想锻炼身体</strong>
+                <span>如果中午三个小时午休时间就好了</span>
             </div>
             <div class="board-item">
-                <strong>番茄学习</strong>
-                <span>25分钟专注 + 5分钟休息，劳逸结合</span>
+                <strong>周末游玩</strong>
+                <span>周末可以游玩两天</span>
             </div>
             <div class="board-item">
-                <strong>优化环境</strong>
-                <span>桌面干净整洁，减少视觉干扰</span>
+                <strong>天龙八部</strong>
+                <span>后边要捡起来，挺有趣</span>
             </div>
             <div class="board-item">
-                <strong>任务分解</strong>
-                <span>化整为零，每次只专注于一个小步骤</span>
+                <strong>当个厨子</strong>
+                <span>报个厨子班，学学厨艺</span>
             </div>
             <div class="board-item">
-                <strong>正念冥想</strong>
-                <span>10分钟静坐，专注于呼吸，回归当下</span>
+                <strong>换个小车</strong>
+                <span>我看丰田86就不错</span>
             </div>
             <div class="board-item">
-                <strong>脑力游戏</strong>
-                <span>练习舒尔特方格，提升专注力</span>
+                <strong>一直想躺着</strong>
+                <span>躺它个一下午，那没事抽抽烟</span>
             </div>
             <div class="board-item">
-                <strong>体育锻炼</strong>
-                <span>每周3次有氧，每次30分钟，强健体魄</span>
+                <strong>还想多看点书</strong>
+                <span>啥书都看看,很有趣</span>
             </div>
             <div class="board-item">
-                <strong>保持弹性</strong>
-                <span>允许偶尔失焦，关键是快速觉察并拉回</span>
+                <strong>多陪陪家人</strong>
+                <span>开车到处转转，吃大餐</span>
             </div>
             <div class="board-item">
-                <strong>思绪转弯</strong>
-                <span>走神时快速记录想法，下次规避</span>
+                <strong>早点退休</strong>
+                <span>多点退休金，哈哈</span>
             </div>
         </div>
     </div>
@@ -518,6 +522,8 @@
     const SHORT_BREAK = 5 * 60; // 5分钟
     const LONG_BREAK = 20 * 60; // 20分钟
     const CYCLES_BEFORE_LONG_BREAK = 4;
+    const START_DATE_STR = '2025-12-09';
+    const END_DATE_STR = '2026-12-01';
 
     // 状态变量
     let timeLeft = WORK_TIME;
@@ -525,6 +531,9 @@
     let isRunning = false;
     let currentMode = 'work'; // 'work', 'shortBreak', 'longBreak'
     let completedPomodoros = 0;
+
+    // Load persisted data
+    loadPomodoroData();
 
     // DOM 元素
     const timerDisplay = document.getElementById('timer');
@@ -537,19 +546,113 @@
     checkTheme();
     updateLifeProgress(); // 计算并更新进度条
     initStats();
-    updateDisplay();
-    updateStats();
-    // 自动开始计时
-    startTimer();
+    
+    // 尝试加载计时器状态，如果成功则不会执行默认的 updateDisplay 和 startTimer
+    if (!loadTimerState()) {
+        updateDisplay();
+        updateStats();
+        // 自动开始计时 (默认行为)
+        startTimer();
+    } else {
+        // 如果加载了状态，updateStats 还是需要的
+        updateStats();
+    }
     
     // 每分钟检查一次主题
     setInterval(checkTheme, 60000);
     // 每天更新一次进度条
     setInterval(updateLifeProgress, 86400000);
 
+    function loadPomodoroData() {
+        try {
+            const data = JSON.parse(localStorage.getItem('pomodoroData'));
+            const today = new Date().toISOString().split('T')[0];
+            if (data && data.date === today) {
+                completedPomodoros = data.count || 0;
+            } else {
+                completedPomodoros = 0;
+                localStorage.setItem('pomodoroData', JSON.stringify({ date: today, count: 0 }));
+            }
+        } catch (e) {
+            console.error('Failed to load data', e);
+            completedPomodoros = 0;
+        }
+    }
+
+    function savePomodoroData() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            localStorage.setItem('pomodoroData', JSON.stringify({ date: today, count: completedPomodoros }));
+        } catch (e) {
+            console.error('Failed to save data', e);
+        }
+    }
+
+    function saveTimerState() {
+        try {
+            const state = {
+                timeLeft: timeLeft,
+                currentMode: currentMode,
+                isRunning: isRunning,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('timerState', JSON.stringify(state));
+        } catch (e) {
+            console.error('Failed to save timer state', e);
+        }
+    }
+
+    function loadTimerState() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('timerState'));
+            if (saved) {
+                // 恢复基本状态
+                currentMode = saved.currentMode;
+                // 恢复 UI 模式（但不重置时间）
+                switchMode(currentMode, false);
+                
+                timeLeft = saved.timeLeft;
+                const wasRunning = saved.isRunning;
+                const lastTime = saved.timestamp;
+                const now = Date.now();
+                
+                if (wasRunning) {
+                    // 计算离线流逝的时间
+                    const elapsedSeconds = Math.floor((now - lastTime) / 1000);
+                    timeLeft -= elapsedSeconds;
+                    
+                    if (timeLeft <= 0) {
+                        // 离线期间倒计时已结束
+                        timeLeft = 0;
+                        updateDisplay();
+                        // 延迟一点执行完成逻辑，让用户看到 00:00
+                        setTimeout(() => {
+                            handleTimerComplete();
+                        }, 500);
+                    } else {
+                        // 继续运行
+                        updateDisplay();
+                        startTimer();
+                    }
+                } else {
+                    // 暂停状态
+                    isRunning = false;
+                    startBtn.textContent = '继续';
+                    startBtn.style.backgroundColor = ''; // 恢复默认色
+                    updateDisplay();
+                    document.title = '已暂停 - 番茄时钟';
+                }
+                return true; // 加载成功
+            }
+        } catch (e) {
+            console.error('Failed to load timer state', e);
+        }
+        return false; // 加载失败或无数据
+    }
+
     function updateLifeProgress() {
-        const startDate = new Date('2025-12-09T00:00:00').getTime();
-        const endDate = new Date('2026-12-01T00:00:00').getTime();
+        const startDate = new Date(START_DATE_STR + 'T00:00:00').getTime();
+        const endDate = new Date(END_DATE_STR + 'T00:00:00').getTime();
         const now = new Date().getTime();
 
         let percentage = 0;
@@ -566,6 +669,12 @@
         const pctStr = percentage.toFixed(2) + '%';
         document.getElementById('progressBar').style.width = pctStr;
         document.getElementById('progressText').textContent = pctStr;
+
+        // 显示开始和结束时间
+        const startElem = document.getElementById('startDateDisplay');
+        const endElem = document.getElementById('endDateDisplay');
+        if (startElem) startElem.textContent = START_DATE_STR;
+        if (endElem) endElem.textContent = END_DATE_STR;
     }
 
     function checkTheme() {
@@ -604,12 +713,17 @@
         startBtn.textContent = '暂停';
         startBtn.style.backgroundColor = '#f0ad4e'; // 暂停时显示黄色
         
+        // 立即保存一次状态
+        saveTimerState();
+
         timerId = setInterval(() => {
             if (timeLeft > 0) {
                 timeLeft--;
                 updateDisplay();
                 // 网页标题同步显示倒计时，方便切换标签页时查看
                 document.title = `${formatTime(timeLeft)} - ${getStatusLabel()}`;
+                // 每次更新都保存状态
+                saveTimerState();
             } else {
                 handleTimerComplete();
             }
@@ -623,6 +737,8 @@
         startBtn.textContent = '继续';
         startBtn.style.backgroundColor = ''; // 恢复默认色
         document.title = '已暂停 - 番茄时钟';
+        // 保存暂停状态
+        saveTimerState();
     }
 
     function resetTimer() {
@@ -635,6 +751,8 @@
         startBtn.textContent = '开始计时';
         updateDisplay();
         document.title = '专注力';
+        // 保存重置后的状态 (isRunning = false)
+        saveTimerState();
     }
 
     function handleTimerComplete() {
@@ -644,39 +762,37 @@
         if (currentMode === 'work') {
             completedPomodoros++;
             updateStats();
+            savePomodoroData(); // 保存数据
             
             // 判断进入哪种休息
             if (completedPomodoros % CYCLES_BEFORE_LONG_BREAK === 0) {
                 switchMode('longBreak');
-                alert("恭喜！完成了4个番茄钟，现在开始20分钟长休息。");
             } else {
                 switchMode('shortBreak');
-                alert("专注时间结束，休息5分钟吧！");
             }
         } else {
             // 休息结束，回到工作
             switchMode('work');
-            alert("休息结束，准备开始新的专注！");
         }
         
-        // 自动开始下一轮（可选，这里设为手动开始更符合人性化）
-        startBtn.textContent = '开始下一轮';
+        // 自动开始下一轮
+        startTimer();
     }
 
-    function switchMode(mode) {
+    function switchMode(mode, resetTime = true) {
         currentMode = mode;
         clockCard.className = 'card clock-card'; // 重置类名
         
         if (mode === 'work') {
-            timeLeft = WORK_TIME;
+            if (resetTime) timeLeft = WORK_TIME;
             statusText.textContent = '学习中 - 保持专注';
             clockCard.classList.add('mode-work');
         } else if (mode === 'shortBreak') {
-            timeLeft = SHORT_BREAK;
+            if (resetTime) timeLeft = SHORT_BREAK;
             statusText.textContent = '休息中 - 放松一下';
             clockCard.classList.add('mode-break');
         } else if (mode === 'longBreak') {
-            timeLeft = LONG_BREAK;
+            if (resetTime) timeLeft = LONG_BREAK;
             statusText.textContent = '长休息 - 深度放松';
             clockCard.classList.add('mode-break');
         }
@@ -749,3 +865,4 @@
 
 </body>
 </html>
+
