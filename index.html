@@ -57,6 +57,7 @@
             justify-content: center;
             align-items: center;
             padding: 10px;
+            overscroll-behavior: none; /* 禁止橡皮筋效果 */
         }
 
         .container {
@@ -168,6 +169,7 @@
                 grid-template-columns: repeat(2, 1fr); /* 强制双列 */
                 gap: 8px !important;
                 align-content: start;
+                overscroll-behavior: contain; /* 防止滚动链 */
             }
 
             .board-item {
@@ -219,6 +221,8 @@
             padding: 24px;
             box-shadow: var(--shadow);
             transition: transform 0.2s;
+            overflow-y: auto;
+            overscroll-behavior: contain;
         }
 
         h1, h2 {
