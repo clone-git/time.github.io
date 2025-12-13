@@ -39,26 +39,7 @@
             --btn-reset-color: #e0e0e0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html, body {
-            height: 100%; /* 使用百分比代替 vh，实现自适应 */
-            width: 100%;
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.4;
-            overflow: hidden; /* 禁止页面滚动 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        ms: center;
             padding: 10px;
             overscroll-behavior: none; /* 禁止橡皮筋效果 */
         }
@@ -248,6 +229,20 @@
             font-size: 0.9rem;
             color: var(--text-color);
             font-weight: 600;
+        }
+
+        .gold-blink {
+            color: #ff0000;
+            animation: goldBlink 1.5s infinite;
+        }
+
+        @keyframes goldBlink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .progress-bar-bg {
@@ -443,7 +438,7 @@
         <!-- <h1>✨ 专注力警示牌</h1> -->
         <div class="progress-container">
             <div class="progress-label">
-                <span>目标进度(徐行弗间，或反先至焉)</span>
+                <span>目标进度(<span class="gold-blink">歇尽全力,徐行弗间,或反先至焉</span>)</span>
                 <span id="progressText">0%</span>
             </div>
             <div class="progress-bar-bg">
@@ -538,6 +533,7 @@
     const CYCLES_BEFORE_LONG_BREAK = 4;
     const START_DATE_STR = '2025-12-09';
     const END_DATE_STR = '2026-12-01';
+    const THEME_STORAGE_KEY = 'theme-mode';
 
     // 状态变量
     let timeLeft = WORK_TIME;
@@ -545,6 +541,7 @@
     let isRunning = false;
     let currentMode = 'work'; // 'work', 'shortBreak', 'longBreak'
     let completedPomodoros = 0;
+    let isAutoTheme = true;
 
     // Load persisted data
     loadPomodoroData();
@@ -557,7 +554,10 @@
     const statsContainer = document.getElementById('pomodoroStats');
 
     // 初始化显示
-    checkTheme();
+    applyStoredTheme();
+    if (isAutoTheme) {
+        checkTheme();
+    }
     updateLifeProgress(); // 计算并更新进度条
     initStats();
     
@@ -573,7 +573,6 @@
     }
     
     // 每分钟检查一次主题 (如果用户手动切换过，则不再自动检查)
-    let isAutoTheme = true;
     setInterval(() => {
         if (isAutoTheme) checkTheme();
     }, 60000);
@@ -694,6 +693,19 @@
         if (endElem) endElem.textContent = END_DATE_STR;
     }
 
+    function applyStoredTheme() {
+        try {
+            const stored = localStorage.getItem(THEME_STORAGE_KEY);
+            if (stored === 'dark') {
+                document.body.classList.add('dark-mode');
+                isAutoTheme = false;
+            } else if (stored === 'light') {
+                document.body.classList.remove('dark-mode');
+                isAutoTheme = false;
+            }
+        } catch (e) {}
+    }
+
     function checkTheme() {
         const hour = new Date().getHours();
         // 早上7点(含) 到 晚上18点(不含) 为白天模式
@@ -709,6 +721,10 @@
     function toggleTheme() {
         isAutoTheme = false; // 禁用自动切换
         document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, isDark ? 'dark' : 'light');
+        } catch (e) {}
     }
 
     function initStats() {
