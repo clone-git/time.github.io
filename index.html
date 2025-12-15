@@ -438,7 +438,7 @@
         <!-- <h1>✨ 专注力警示牌</h1> -->
         <div class="progress-container">
             <div class="progress-label">
-                <span>目标进度(<span class="gold-blink">歇尽全力,徐行弗间,或反先至焉</span>)</span>
+                <span>世界末日(<span class="gold-blink">歇尽全力,徐行弗间,或反先至焉</span>)</span>
                 <span id="progressText">0%</span>
             </div>
             <div class="progress-bar-bg">
@@ -673,13 +673,13 @@
 
         let percentage = 0;
         if (now <= startDate) {
-            percentage = 0;
+            percentage = 100; // 还没开始，剩余 100%
         } else if (now >= endDate) {
-            percentage = 100;
+            percentage = 0;   // 结束了，剩余 0%
         } else {
             const total = endDate - startDate;
-            const elapsed = now - startDate;
-            percentage = (elapsed / total) * 100;
+            const remaining = endDate - now;
+            percentage = (remaining / total) * 100;
         }
 
         const pctStr = percentage.toFixed(2) + '%';
