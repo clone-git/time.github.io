@@ -440,9 +440,9 @@
         <!-- <h1>✨ 专注力警示牌</h1> -->
         <div class="progress-container">
             <div class="progress-label">
+                <span id="elapsedText" style="color: var(--work-color);">0%</span>
                 <span>世界末日(<span class="gold-blink">歇尽全力,徐行弗间,或反先至焉</span>)</span>
                 <div>
-                    <span id="elapsedText" style="color: var(--work-color); margin-right: 15px;">已过: 0%</span>
                     <span id="progressText">0%</span>
                 </div>
             </div>
@@ -703,7 +703,7 @@
         // 更新红色区域（左侧）显示的已过百分比
         const elapsedElem = document.getElementById('elapsedText');
         if (elapsedElem) {
-            elapsedElem.textContent = '已过: ' + elapsedStr;
+            elapsedElem.textContent =  elapsedStr;
         }
 
         // 显示开始和结束时间
