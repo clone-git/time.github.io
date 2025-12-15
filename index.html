@@ -254,6 +254,20 @@
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
             display: flex;
             justify-content: flex-end; /* 让进度条靠右，实现左侧减少的效果 */
+            position: relative; /* 为百分比文字定位做准备 */
+        }
+        
+        .progress-text-overlay {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            pointer-events: none;
         }
 
         .progress-bar-fill {
@@ -444,6 +458,7 @@
                 <span id="progressText">0%</span>
             </div>
             <div class="progress-bar-bg">
+                <div class="progress-text-overlay" id="elapsedText">已过: 0%</div>
                 <div class="progress-bar-fill" id="progressBar"></div>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px;">
@@ -674,19 +689,34 @@
         const now = new Date().getTime();
 
         let percentage = 0;
+        let elapsedPercentage = 0;
+        
         if (now <= startDate) {
             percentage = 100; // 还没开始，剩余 100%
+            elapsedPercentage = 0;
         } else if (now >= endDate) {
             percentage = 0;   // 结束了，剩余 0%
+            elapsedPercentage = 100;
         } else {
             const total = endDate - startDate;
             const remaining = endDate - now;
+            const elapsed = now - startDate;
+            
             percentage = (remaining / total) * 100;
+            elapsedPercentage = (elapsed / total) * 100;
         }
 
         const pctStr = percentage.toFixed(2) + '%';
+        const elapsedStr = elapsedPercentage.toFixed(2) + '%';
+        
         document.getElementById('progressBar').style.width = pctStr;
         document.getElementById('progressText').textContent = pctStr;
+        
+        // 更新红色区域（左侧）显示的已过百分比
+        const elapsedElem = document.getElementById('elapsedText');
+        if (elapsedElem) {
+            elapsedElem.textContent = '已过: ' + elapsedStr;
+        }
 
         // 显示开始和结束时间
         const startElem = document.getElementById('startDateDisplay');
