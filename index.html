@@ -1,941 +1,150 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专注力</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>任务</title>
     <style>
-        :root {
-            /* 白天模式变量 */
-            --primary-color: #4a90e2;
-            --work-color: #d9534f;
-            --break-color: #5cb85c;
-            --bg-color: #f5f7fa;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --item-bg: #f8f9fa;
-            --item-title-color: #2c3e50;
-            --item-text-color: #666;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --tomato-bg: #e0e0e0;
-            --btn-reset-bg: #e0e0e0;
-            --btn-reset-color: #333;
-        }
+      :root {
+        color-scheme: light;
+      }
 
-        /* 夜间模式变量 */
-        body.dark-mode {
-            --primary-color: #64b5f6;
-            --work-color: #ef5350;
-            --break-color: #66bb6a;
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --item-bg: #2d2d2d;
-            --item-title-color: #e0e0e0;
-            --item-text-color: #aaaaaa;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            --tomato-bg: #424242;
-            --btn-reset-bg: #424242;
-            --btn-reset-color: #e0e0e0;
-        }
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #111827;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
 
-        ms: center;
-            padding: 10px;
-            overscroll-behavior: none; /* 禁止橡皮筋效果 */
-        }
+      .page {
+        min-height: 100dvh;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+        padding-right: 16px;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+        padding-left: 16px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+      .layout {
+        width: 100%;
+        max-width: 420px;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
 
-        /* 手机竖屏布局 */
-        @media (max-width: 767px) {
-            .container {
-                display: flex;
-                flex-direction: column;
-            }
+      .top {
+        padding-top: 8px;
+      }
 
-            /* 时钟区域置顶，压缩高度 */
-            .clock-card {
-                flex: 0 0 auto; /* 不伸缩 */
-                padding: 12px !important;
-                display: flex;
-                flex-direction: column; /* 保持竖向，但更紧凑 */
-                justify-content: center;
-                align-items: center;
-                gap: 5px;
-            }
-            
-            .clock-card h2 {
-                display: none; /* 手机端隐藏标题节省空间 */
-            }
+      .number {
+        font-size: clamp(56px, 12vw, 76px);
+        font-weight: 800;
+        line-height: 1;
+        text-align: center;
+      }
 
-            .timer-area {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 5px;
-            }
+      .number.is-red {
+        color: #ef4444;
+      }
 
-            .timer-display {
-                font-size: 3rem !important;
-                margin: 5px 0 !important;
-                line-height: 1;
-            }
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        background: #16a34a;
+        color: #ffffff;
+        width: 100%;
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.22);
+      }
 
-            .status-badge {
-                margin: 0;
-                font-size: 0.8rem;
-                padding: 4px 10px;
-            }
+      button:active {
+        transform: translateY(1px);
+      }
 
-            .controls {
-                margin: 5px 0 10px 0 !important;
-            }
-            
-            button {
-                padding: 6px 12px;
-                font-size: 0.9rem;
-            }
+      button:focus-visible {
+        outline: 3px solid rgba(22, 163, 74, 0.45);
+        outline-offset: 3px;
+      }
 
-            /* 番茄统计区域 */
-            .stats-wrapper {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                margin-top: 0;
-                gap: 5px;
-            }
-            
-            .stats-label {
-                display: none;
-            }
-
-            .pomodoro-stats {
-                margin: 0 !important;
-                gap: 4px !important;
-            }
-            
-            .tomato {
-                width: 12px !important;
-                height: 12px !important;
-            }
-            .tomato:nth-child(4n) {
-                margin-right: 4px !important;
-            }
-
-            /* 警示牌区域：自适应高度，不强行撑满 */
-            .board-card {
-                flex: 0 1 auto; /* 允许根据内容调整高度，也允许压缩 */
-                overflow: hidden; /* 内部溢出隐藏或滚动 */
-                display: flex;
-                flex-direction: column;
-                padding: 12px !important;
-                max-height: 100%; /* 防止溢出父容器 */
-            }
-
-            .board-card h1 {
-                font-size: 1.2rem !important;
-                margin-bottom: 10px !important;
-                flex: 0 0 auto;
-            }
-
-            .board-list {
-                flex: 1;
-                overflow-y: auto; /* 内容过多时内部滚动 */
-                display: grid;
-                grid-template-columns: repeat(2, 1fr); /* 强制双列 */
-                gap: 8px !important;
-                align-content: start;
-                overscroll-behavior: contain; /* 防止滚动链 */
-            }
-
-            .board-item {
-                padding: 8px !important;
-                font-size: 0.85rem !important;
-                border-left-width: 3px !important;
-            }
-
-            .board-item strong {
-                font-size: 1em !important;
-                margin-bottom: 2px !important;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .board-item span {
-                font-size: 0.8em !important;
-                line-height: 1.2;
-                display: -webkit-box;
-                -webkit-line-clamp: 2; /* 限制显示两行 */
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-        }
-
-        /* 大屏幕布局保持不变，微调高度适配 */
-        @media (min-width: 768px) {
-            .container {
-                display: grid;
-                grid-template-columns: 2fr 1fr;
-                grid-template-rows: 100%;
-                align-items: stretch; /* 拉伸填满高度 */
-            }
-
-            .card {
-                height: 100%;
-                overflow-y: auto;
-            }
-            
-            .clock-card {
-                justify-content: center;
-            }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-        }
-
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
-
-        /* 进度条样式 */
-        .progress-container {
-            width: 100%;
-            margin-bottom: 20px;
-            padding: 0 10px;
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: var(--text-color);
-            font-weight: 600;
-        }
-
-        .gold-blink {
-            color: #ff0000;
-            animation: goldBlink 1.5s infinite;
-        }
-
-        @keyframes goldBlink {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 12px;
-            background-color: var(--work-color); /* 红色背景，代表流逝的时间 */
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: flex-end; /* 让进度条靠右，实现左侧减少的效果 */
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--break-color));
-            border-radius: 0 6px 6px 0; /* 左侧直角，右侧圆角，衔接更自然 */
-            width: 0%;
-            transition: width 1s ease-in-out;
-            position: relative;
-        }
-
-        /* 闪光特效 */
-        .progress-bar-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(
-                90deg,
-                rgba(255,255,255,0) 0%,
-                rgba(255,255,255,0.3) 50%,
-                rgba(255,255,255,0) 100%
-            );
-            transform: skewX(-20deg) translateX(-150%);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            100% {
-                transform: skewX(-20deg) translateX(150%);
-            }
-        }
-
-        /* 警示牌样式 */
-        .board-list {
-            list-style: none;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 默认双列布局 */
-            gap: 15px;
-        }
-
-        @media (min-width: 600px) and (max-width: 767px) {
-            .board-list {
-                grid-template-columns: repeat(3, 1fr); /* 平板竖屏可能放下3列 */
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .board-list {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .board-item {
-            background: var(--item-bg);
-            border-left: 4px solid var(--primary-color);
-            padding: 12px 16px;
-            border-radius: 4px;
-            font-size: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .board-item strong {
-            font-size: 1.1em;
-            color: var(--item-title-color);
-            margin-bottom: 4px;
-        }
-
-        .board-item span {
-            font-size: 0.9em;
-            color: var(--item-text-color);
-        }
-
-        /* 番茄时钟样式 */
-        .clock-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* position: sticky; */ /* 一屏布局不需要 sticky */
-            /* top: 20px; */
-        }
-
-        .timer-display {
-            font-size: 4rem;
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 20px 0;
-            color: var(--work-color);
-            transition: color 0.3s;
-        }
-
-        .status-badge {
-            background: var(--work-color);
-            color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            transition: background 0.3s;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        button {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .btn-start {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-reset {
-            background-color: var(--btn-reset-bg);
-            color: var(--btn-reset-color);
-        }
-
-        .btn-theme {
-            background-color: transparent;
-            border: 2px solid var(--btn-reset-bg);
-            color: var(--text-color);
-        }
-
-        .pomodoro-stats {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 0 10px;
-        }
-
-        .tomato {
-            width: 18px;
-            height: 18px;
-            background-color: var(--tomato-bg);
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-
-        /* 每4个一组增加间距 */
-        .tomato:nth-child(4n) {
-            margin-right: 12px;
-        }
-        .tomato:last-child {
-            margin-right: 0;
-        }
-
-        .tomato.active {
-            background-color: var(--work-color);
-            transform: scale(1.1);
-        }
-
-        /* 状态颜色切换 */
-        .mode-work .timer-display { color: var(--work-color); }
-        .mode-work .status-badge { background-color: var(--work-color); }
-        
-        .mode-break .timer-display { color: var(--break-color); }
-        .mode-break .status-badge { background-color: var(--break-color); }
+      .done {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-align: center;
+        color: #ffffff;
+        background: #16a34a;
+        border-radius: 16px;
+        padding: 18px 16px;
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.18);
+      }
     </style>
-</head>
-<body>
-
-<div class="container">
-    <!-- 勉励警示牌区域 -->
-    <div class="card board-card">
-        <!-- <h1>✨ 专注力警示牌</h1> -->
-        <div class="progress-container">
-            <div class="progress-label">
-                <span id="elapsedText" style="color: var(--work-color);">0%</span>
-                <span>世界末日(<span class="gold-blink">歇尽全力,徐行弗间,或反先至焉</span>)</span>
-                <div>
-                    <span id="progressText">0%</span>
-                </div>
-            </div>
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progressBar"></div>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-top: 4px;">
-                <span id="startDateDisplay"></span>
-                <span id="endDateDisplay"></span>
-            </div>
+  </head>
+  <body>
+    <main class="page" aria-live="polite">
+      <div class="layout">
+        <div class="top">
+          <div id="count" class="number is-red">200</div>
+          <div id="done" class="done" hidden>任务完成</div>
         </div>
+        <button id="decreaseBtn" type="button">减少</button>
+      </div>
+    </main>
 
-        <div class="board-list">
-            <div class="board-item">
-                <strong>二十四史</strong>
-                <span>还没开始看,未来花个几年去看</span>
-            </div>
-            <div class="board-item">
-                <strong>资治通鉴</strong>
-                <span>已经看到汉景帝了,真不错</span>
-            </div>
-            <div class="board-item">
-                <strong>去网吧玩玩</strong>
-                <span>家附近有个网吧叫网鱼,好想去</span>
-            </div>
-            <div class="board-item">
-                <strong>想锻炼身体</strong>
-                <span>原本就有身高优势,只是没有时间</span>
-            </div>
-            <div class="board-item">
-                <strong>周末游玩</strong>
-                <span>有时间有钱,两天直接坐飞机走起</span>
-            </div>
-            <div class="board-item">
-                <strong>单机,街机,网游</strong>
-                <span>得需要时间和金钱,一定会有的,一定</span>
-            </div>
-            <div class="board-item">
-                <strong>学学厨艺,高尔夫？</strong>
-                <span>有兴趣就去,是吧没压力</span>
-            </div>
-            <div class="board-item">
-                <strong>跑车跑车</strong>
-                <span>丰田86好看又不贵</span>
-            </div>
-            <div class="board-item">
-                <strong>自然醒,9点再去上班</strong>
-                <span>睡到自然醒，出门10分钟到单位,多么爽</span>
-            </div>
-            <div class="board-item">
-                <strong>想想想想</strong>
-                <span>哈哈不能说,哈哈不能说</span>
-            </div>
-            <div class="board-item">
-                <strong>陪家人</strong>
-                <span>有大把时间陪家人,陪BB,家长会也能去</span>
-            </div>
-            <div class="board-item">
-                <strong>早点退休</strong>
-                <span>听说退休金很多，哈哈</span>
-            </div>
-        </div>
-    </div>
+    <script>
+      const countEl = document.getElementById("count");
+      const decreaseBtn = document.getElementById("decreaseBtn");
+      const doneEl = document.getElementById("done");
 
-    <!-- 番茄时钟区域 -->
-    <div class="card clock-card mode-work" id="clockCard">
-        <h2>🍅 时钟</h2>
-        <div class="timer-area">
-            <div class="status-badge" id="statusText">学习中 - 保持专注</div>
-            <div class="timer-display" id="timer">25:00</div>
-        </div>
-        
-        <div class="controls">
-            <button class="btn-start" id="startBtn" onclick="toggleTimer()">开始计时</button>
-            <button class="btn-reset" onclick="resetTimer()">重置</button>
-            <button class="btn-theme" onclick="toggleTheme()">主题</button>
-        </div>
+      const STORAGE_KEY = "task_count";
 
-        <div class="stats-wrapper">
-            <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;" class="stats-label">今日番茄数</div>
-            <div class="pomodoro-stats" id="pomodoroStats">
-                <!-- JS 动态生成 20 个番茄 -->
-            </div>
-        </div>
-    </div>
-</div>
+      function getInitialCount() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw === null ? NaN : Number.parseInt(raw, 10);
 
-<script>
-    // 配置
-    const WORK_TIME = 25 * 60; // 25分钟
-    const SHORT_BREAK = 5 * 60; // 5分钟
-    const LONG_BREAK = 20 * 60; // 20分钟
-    const CYCLES_BEFORE_LONG_BREAK = 4;
-    const START_DATE_STR = '2025-12-09';
-    const END_DATE_STR = '2026-12-01';
-    const THEME_STORAGE_KEY = 'theme-mode';
-
-    // 状态变量
-    let timeLeft = WORK_TIME;
-    let timerId = null;
-    let isRunning = false;
-    let currentMode = 'work'; // 'work', 'shortBreak', 'longBreak'
-    let completedPomodoros = 0;
-    let isAutoTheme = true;
-
-    // Load persisted data
-    loadPomodoroData();
-
-    // DOM 元素
-    const timerDisplay = document.getElementById('timer');
-    const startBtn = document.getElementById('startBtn');
-    const statusText = document.getElementById('statusText');
-    const clockCard = document.getElementById('clockCard');
-    const statsContainer = document.getElementById('pomodoroStats');
-
-    // 初始化显示
-    applyStoredTheme();
-    if (isAutoTheme) {
-        checkTheme();
-    }
-    updateLifeProgress(); // 计算并更新进度条
-    initStats();
-    
-    // 尝试加载计时器状态，如果成功则不会执行默认的 updateDisplay 和 startTimer
-    if (!loadTimerState()) {
-        updateDisplay();
-        updateStats();
-        // 自动开始计时 (默认行为)
-        startTimer();
-    } else {
-        // 如果加载了状态，updateStats 还是需要的
-        updateStats();
-    }
-    
-    // 每分钟检查一次主题 (如果用户手动切换过，则不再自动检查)
-    setInterval(() => {
-        if (isAutoTheme) checkTheme();
-    }, 60000);
-    // 每天更新一次进度条
-    setInterval(updateLifeProgress, 86400000);
-
-    function loadPomodoroData() {
-        try {
-            const data = JSON.parse(localStorage.getItem('pomodoroData'));
-            const today = new Date().toISOString().split('T')[0];
-            if (data && data.date === today) {
-                completedPomodoros = data.count || 0;
-            } else {
-                completedPomodoros = 0;
-                localStorage.setItem('pomodoroData', JSON.stringify({ date: today, count: 0 }));
-            }
-        } catch (e) {
-            console.error('Failed to load data', e);
-            completedPomodoros = 0;
-        }
-    }
-
-    function savePomodoroData() {
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            localStorage.setItem('pomodoroData', JSON.stringify({ date: today, count: completedPomodoros }));
-        } catch (e) {
-            console.error('Failed to save data', e);
-        }
-    }
-
-    function saveTimerState() {
-        try {
-            const state = {
-                timeLeft: timeLeft,
-                currentMode: currentMode,
-                isRunning: isRunning,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('timerState', JSON.stringify(state));
-        } catch (e) {
-            console.error('Failed to save timer state', e);
-        }
-    }
-
-    function loadTimerState() {
-        try {
-            const saved = JSON.parse(localStorage.getItem('timerState'));
-            if (saved) {
-                // 恢复基本状态
-                currentMode = saved.currentMode;
-                // 恢复 UI 模式（但不重置时间）
-                switchMode(currentMode, false);
-                
-                timeLeft = saved.timeLeft;
-                const wasRunning = saved.isRunning;
-                const lastTime = saved.timestamp;
-                const now = Date.now();
-                
-                if (wasRunning) {
-                    // 计算离线流逝的时间
-                    const elapsedSeconds = Math.floor((now - lastTime) / 1000);
-                    timeLeft -= elapsedSeconds;
-                    
-                    if (timeLeft <= 0) {
-                        // 离线期间倒计时已结束
-                        timeLeft = 0;
-                        updateDisplay();
-                        // 延迟一点执行完成逻辑，让用户看到 00:00
-                        setTimeout(() => {
-                            handleTimerComplete();
-                        }, 500);
-                    } else {
-                        // 继续运行
-                        updateDisplay();
-                        startTimer();
-                    }
-                } else {
-                    // 暂停状态
-                    isRunning = false;
-                    startBtn.textContent = '继续';
-                    startBtn.style.backgroundColor = ''; // 恢复默认色
-                    updateDisplay();
-                    document.title = '已暂停 - 番茄时钟';
-                }
-                return true; // 加载成功
-            }
-        } catch (e) {
-            console.error('Failed to load timer state', e);
-        }
-        return false; // 加载失败或无数据
-    }
-
-    function updateLifeProgress() {
-        const startDate = new Date(START_DATE_STR + 'T00:00:00').getTime();
-        const endDate = new Date(END_DATE_STR + 'T00:00:00').getTime();
-        const now = new Date().getTime();
-
-        let percentage = 0;
-        let elapsedPercentage = 0;
-        
-        if (now <= startDate) {
-            percentage = 100; // 还没开始，剩余 100%
-            elapsedPercentage = 0;
-        } else if (now >= endDate) {
-            percentage = 0;   // 结束了，剩余 0%
-            elapsedPercentage = 100;
-        } else {
-            const total = endDate - startDate;
-            const remaining = endDate - now;
-            const elapsed = now - startDate;
-            
-            percentage = (remaining / total) * 100;
-            elapsedPercentage = (elapsed / total) * 100;
+        if (Number.isFinite(parsed) && parsed >= 0) {
+          return parsed;
         }
 
-        const pctStr = percentage.toFixed(2) + '%';
-        const elapsedStr = elapsedPercentage.toFixed(2) + '%';
-        
-        document.getElementById('progressBar').style.width = pctStr;
-        document.getElementById('progressText').textContent = pctStr;
-        
-        // 更新红色区域（左侧）显示的已过百分比
-        const elapsedElem = document.getElementById('elapsedText');
-        if (elapsedElem) {
-            elapsedElem.textContent =  elapsedStr;
-        }
+        return 200;
+      }
 
-        // 显示开始和结束时间
-        const startElem = document.getElementById('startDateDisplay');
-        const endElem = document.getElementById('endDateDisplay');
-        if (startElem) startElem.textContent = START_DATE_STR;
-        if (endElem) endElem.textContent = END_DATE_STR;
-    }
+      function persistCount(nextCount) {
+        localStorage.setItem(STORAGE_KEY, String(nextCount));
+      }
 
-    function applyStoredTheme() {
-        try {
-            const stored = localStorage.getItem(THEME_STORAGE_KEY);
-            if (stored === 'dark') {
-                document.body.classList.add('dark-mode');
-                isAutoTheme = false;
-            } else if (stored === 'light') {
-                document.body.classList.remove('dark-mode');
-                isAutoTheme = false;
-            }
-        } catch (e) {}
-    }
+      let count = getInitialCount();
 
-    function checkTheme() {
-        const hour = new Date().getHours();
-        // 早上7点(含) 到 晚上18点(不含) 为白天模式
-        const isDayTime = hour >= 7 && hour < 18;
-        
-        if (isDayTime) {
-            document.body.classList.remove('dark-mode');
-        } else {
-            document.body.classList.add('dark-mode');
-        }
-    }
+      function render() {
+        countEl.textContent = String(count);
 
-    function toggleTheme() {
-        isAutoTheme = false; // 禁用自动切换
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        try {
-            localStorage.setItem(THEME_STORAGE_KEY, isDark ? 'dark' : 'light');
-        } catch (e) {}
-    }
+        const isDone = count <= 0;
+        countEl.hidden = isDone;
+        doneEl.hidden = !isDone;
+        decreaseBtn.hidden = isDone;
+      }
 
-    function initStats() {
-        statsContainer.innerHTML = '';
-        for (let i = 0; i < 20; i++) {
-            const div = document.createElement('div');
-            div.className = 'tomato';
-            statsContainer.appendChild(div);
-        }
-    }
+      function handleDecrease() {
+        count = Math.max(0, count - 1);
+        persistCount(count);
+        render();
+      }
 
-    function toggleTimer() {
-        if (isRunning) {
-            pauseTimer();
-        } else {
-            startTimer();
-        }
-    }
-
-    function startTimer() {
-        if (timerId) return;
-        
-        isRunning = true;
-        startBtn.textContent = '暂停';
-        startBtn.style.backgroundColor = '#f0ad4e'; // 暂停时显示黄色
-        
-        // 立即保存一次状态
-        saveTimerState();
-
-        timerId = setInterval(() => {
-            if (timeLeft > 0) {
-                timeLeft--;
-                updateDisplay();
-                // 网页标题同步显示倒计时，方便切换标签页时查看
-                document.title = `${formatTime(timeLeft)} - ${getStatusLabel()}`;
-                // 每次更新都保存状态
-                saveTimerState();
-            } else {
-                handleTimerComplete();
-            }
-        }, 1000);
-    }
-
-    function pauseTimer() {
-        isRunning = false;
-        clearInterval(timerId);
-        timerId = null;
-        startBtn.textContent = '继续';
-        startBtn.style.backgroundColor = ''; // 恢复默认色
-        document.title = '已暂停 - 番茄时钟';
-        // 保存暂停状态
-        saveTimerState();
-    }
-
-    function resetTimer() {
-        pauseTimer();
-        
-        // 1. 重置番茄数据
-        completedPomodoros = 0;
-        localStorage.removeItem('pomodoroData');
-        updateStats();
-
-        // 2. 重置计时器状态缓存
-        localStorage.removeItem('timerState');
-
-        // 3. 重置为 Work 模式初始时间
-        currentMode = 'work';
-        timeLeft = WORK_TIME;
-        
-        // 4. 重置 UI
-        startBtn.textContent = '开始计时';
-        statusText.textContent = '学习中 - 保持专注';
-        clockCard.className = 'card clock-card mode-work';
-        
-        updateDisplay();
-        document.title = '专注力';
-        
-        // 注意：这里我们不再调用 saveTimerState()，因为我们希望它是“干净”的。
-        // 或者我们可以保存一个初始状态，防止刷新后又回到之前的状态（如果 clear 没生效的话，但 removeItem 应该够了）
-        // 为了保险，我们可以保存一个“未开始”的初始状态
-        saveTimerState();
-    }
-
-    function handleTimerComplete() {
-        pauseTimer();
-        playNotificationSound();
-
-        if (currentMode === 'work') {
-            completedPomodoros++;
-            updateStats();
-            savePomodoroData(); // 保存数据
-            
-            // 判断进入哪种休息
-            if (completedPomodoros % CYCLES_BEFORE_LONG_BREAK === 0) {
-                switchMode('longBreak');
-            } else {
-                switchMode('shortBreak');
-            }
-        } else {
-            // 休息结束，回到工作
-            switchMode('work');
-        }
-        
-        // 自动开始下一轮
-        startTimer();
-    }
-
-    function switchMode(mode, resetTime = true) {
-        currentMode = mode;
-        clockCard.className = 'card clock-card'; // 重置类名
-        
-        if (mode === 'work') {
-            if (resetTime) timeLeft = WORK_TIME;
-            statusText.textContent = '学习中 - 保持专注';
-            clockCard.classList.add('mode-work');
-        } else if (mode === 'shortBreak') {
-            if (resetTime) timeLeft = SHORT_BREAK;
-            statusText.textContent = '休息中 - 放松一下';
-            clockCard.classList.add('mode-break');
-        } else if (mode === 'longBreak') {
-            if (resetTime) timeLeft = LONG_BREAK;
-            statusText.textContent = '长休息 - 深度放松';
-            clockCard.classList.add('mode-break');
-        }
-        updateDisplay();
-    }
-
-    function updateDisplay() {
-        timerDisplay.textContent = formatTime(timeLeft);
-    }
-
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function getStatusLabel() {
-        if (currentMode === 'work') return '学习中';
-        return '休息中';
-    }
-
-    function updateStats() {
-        const tomatoes = statsContainer.children;
-        for (let i = 0; i < tomatoes.length; i++) {
-            if (i < completedPomodoros) {
-                tomatoes[i].classList.add('active');
-            } else {
-                tomatoes[i].classList.remove('active');
-            }
-        }
-    }
-
-    function playNotificationSound() {
-        // 简单的提示音逻辑，使用 Web Audio API 生成简单的 Beep 声
-        try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) {
-                const ctx = new AudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                osc.type = 'sine';
-                osc.frequency.value = 440; // A4
-                gain.gain.value = 0.1;
-                
-                osc.start();
-                setTimeout(() => {
-                    osc.stop();
-                    // 再次播放两声
-                    setTimeout(() => {
-                        const osc2 = ctx.createOscillator();
-                        const gain2 = ctx.createGain();
-                        osc2.connect(gain2);
-                        gain2.connect(ctx.destination);
-                        osc2.frequency.value = 523.25; // C5
-                        gain2.gain.value = 0.1;
-                        osc2.start();
-                        setTimeout(() => osc2.stop(), 200);
-                    }, 300);
-                }, 200);
-            }
-        } catch (e) {
-            console.log('Audio playback failed', e);
-        }
-    }
-</script>
-
-</body>
+      decreaseBtn.addEventListener("click", handleDecrease);
+      persistCount(count);
+      render();
+    </script>
+  </body>
 </html>
-
