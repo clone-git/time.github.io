@@ -45,6 +45,14 @@
         padding-top: 8px;
       }
 
+      .timer {
+        font-size: 22px;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 12px;
+        color: #111827;
+      }
+
       .number {
         font-size: clamp(56px, 12vw, 76px);
         font-weight: 800;
@@ -68,6 +76,16 @@
         color: #ffffff;
         width: 100%;
         box-shadow: 0 10px 20px rgba(22, 163, 74, 0.22);
+      }
+
+      button.is-secondary {
+        background: #0ea5e9;
+        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.22);
+      }
+
+      button.is-gray {
+        background: rgb(171, 192, 236);
+        box-shadow: 0 10px 20px rgba(17, 24, 39, 0.22);
       }
 
       button:active {
@@ -96,9 +114,12 @@
     <main class="page" aria-live="polite">
       <div class="layout">
         <div class="top">
+          <div id="timer" class="timer">00:00.000</div>
           <div id="count" class="number is-red">200</div>
           <div id="done" class="done" hidden>任务完成</div>
         </div>
+        <button id="pauseBtn" class="is-gray" type="button" hidden>暂停</button>
+        <button id="resumeBtn" class="is-secondary" type="button" hidden>继续</button>
         <button id="decreaseBtn" type="button">减少</button>
       </div>
     </main>
@@ -106,9 +127,76 @@
     <script>
       const countEl = document.getElementById("count");
       const decreaseBtn = document.getElementById("decreaseBtn");
+      const timerEl = document.getElementById("timer");
       const doneEl = document.getElementById("done");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const resumeBtn = document.getElementById("resumeBtn");
 
       const STORAGE_KEY = "task_count";
+      const STORAGE_TIMER_KEY = "task_timer";
+
+      function getInitialTimerState() {
+        const raw = localStorage.getItem(STORAGE_TIMER_KEY);
+        if (raw === null) {
+          return {
+            elapsedMs: 0,
+            isRunning: false,
+            lastStartAtMs: 0,
+          };
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          const elapsedMs =
+            typeof parsed?.elapsedMs === "number" && Number.isFinite(parsed.elapsedMs)
+              ? Math.max(0, Math.floor(parsed.elapsedMs))
+              : 0;
+          const isRunning = parsed?.isRunning === true;
+          const lastStartAtMs =
+            typeof parsed?.lastStartAtMs === "number" && Number.isFinite(parsed.lastStartAtMs)
+              ? Math.max(0, Math.floor(parsed.lastStartAtMs))
+              : 0;
+
+          return {
+            elapsedMs,
+            isRunning,
+            lastStartAtMs,
+          };
+        } catch {
+          return {
+            elapsedMs: 0,
+            isRunning: false,
+            lastStartAtMs: 0,
+          };
+        }
+      }
+
+      function persistTimerState() {
+        localStorage.setItem(
+          STORAGE_TIMER_KEY,
+          JSON.stringify({
+            elapsedMs,
+            isRunning: isTimerRunning,
+            lastStartAtMs,
+          }),
+        );
+      }
+
+      function formatDuration(totalMs) {
+        const safeMs = Math.max(0, Math.floor(totalMs));
+        const milliseconds = safeMs % 1000;
+        const totalSeconds = Math.floor(safeMs / 1000);
+        const seconds = totalSeconds % 60;
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const minutes = totalMinutes % 60;
+        const hours = Math.floor(totalMinutes / 60);
+
+        if (hours > 0) {
+          return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
+        }
+
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
+      }
 
       function getInitialCount() {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -126,25 +214,99 @@
       }
 
       let count = getInitialCount();
+      const initialTimerState = getInitialTimerState();
+      let elapsedMs = initialTimerState.elapsedMs;
+      let isTimerRunning = initialTimerState.isRunning;
+      let lastStartAtMs = initialTimerState.lastStartAtMs;
+      let timerIntervalId = null;
+
+      function updateTimerText() {
+        timerEl.textContent = formatDuration(
+          elapsedMs + (isTimerRunning ? Date.now() - lastStartAtMs : 0),
+        );
+      }
+
+      function startTimer() {
+        if (isTimerRunning) return;
+        isTimerRunning = true;
+        lastStartAtMs = Date.now();
+        persistTimerState();
+        updateTimerText();
+        timerIntervalId = window.setInterval(updateTimerText, 50);
+      }
+
+      function pauseTimer() {
+        if (!isTimerRunning) return;
+        elapsedMs += Date.now() - lastStartAtMs;
+        isTimerRunning = false;
+        lastStartAtMs = 0;
+        if (timerIntervalId !== null) {
+          window.clearInterval(timerIntervalId);
+          timerIntervalId = null;
+        }
+        persistTimerState();
+        updateTimerText();
+      }
+
+      function initTimerFromStorage() {
+        if (!isTimerRunning) {
+          updateTimerText();
+          return;
+        }
+
+        const nowMs = Date.now();
+        if (lastStartAtMs <= 0 || lastStartAtMs > nowMs) {
+          isTimerRunning = false;
+          lastStartAtMs = 0;
+          persistTimerState();
+          updateTimerText();
+          return;
+        }
+
+        updateTimerText();
+        timerIntervalId = window.setInterval(updateTimerText, 50);
+      }
 
       function render() {
         countEl.textContent = String(count);
+        updateTimerText();
 
         const isDone = count <= 0;
         countEl.hidden = isDone;
         doneEl.hidden = !isDone;
         decreaseBtn.hidden = isDone;
+        pauseBtn.hidden = isDone || !isTimerRunning;
+        resumeBtn.hidden = isDone || isTimerRunning || elapsedMs === 0;
+
+        if (isDone) {
+          pauseTimer();
+        }
       }
 
       function handleDecrease() {
+        startTimer();
         count = Math.max(0, count - 1);
         persistCount(count);
         render();
       }
 
+      function handlePause() {
+        pauseTimer();
+        render();
+      }
+
+      function handleResume() {
+        startTimer();
+        render();
+      }
+
       decreaseBtn.addEventListener("click", handleDecrease);
+      pauseBtn.addEventListener("click", handlePause);
+      resumeBtn.addEventListener("click", handleResume);
       persistCount(count);
+      initTimerFromStorage();
       render();
     </script>
   </body>
 </html>
+
