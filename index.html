@@ -28,29 +28,43 @@
         padding-left: 16px;
         box-sizing: border-box;
         display: flex;
-        justify-content: center;
-        align-items: center;
+        justify-content: stretch;
+        align-items: stretch;
       }
 
       .layout {
         width: 100%;
-        max-width: 420px;
         margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
+        display: grid;
+        grid-template-rows: repeat(4, 1fr);
+        gap: 0;
+        flex: 1;
+        min-height: 100%;
       }
 
-      .top {
-        padding-top: 8px;
+      .slot {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
       }
 
       .timer {
-        font-size: 22px;
+        font-size: 40px;
         font-weight: 800;
         text-align: center;
         margin-bottom: 12px;
         color: #111827;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+        display: block;
+        width: 100%;
+        min-width: 13ch;
+        line-height: 1;
       }
 
       .number {
@@ -58,6 +72,7 @@
         font-weight: 800;
         line-height: 1;
         text-align: center;
+        width: 100%;
       }
 
       .number.is-red {
@@ -75,7 +90,19 @@
         background: #16a34a;
         color: #ffffff;
         width: 100%;
+        height: 100%;
         box-shadow: 0 10px 20px rgba(22, 163, 74, 0.22);
+      }
+
+      .controls {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: stretch;
+      }
+
+      .controls button {
+        flex: 1;
       }
 
       button.is-secondary {
@@ -107,20 +134,25 @@
         border-radius: 16px;
         padding: 18px 16px;
         box-shadow: 0 10px 20px rgba(22, 163, 74, 0.18);
+        width: 100%;
       }
     </style>
   </head>
   <body>
     <main class="page" aria-live="polite">
       <div class="layout">
-        <div class="top">
+        <div class="slot">
           <div id="timer" class="timer">00:00.000</div>
+        </div>
+        <div class="slot">
           <div id="count" class="number is-red">200</div>
           <div id="done" class="done" hidden>任务完成</div>
         </div>
-        <button id="pauseBtn" class="is-gray" type="button" hidden>暂停</button>
-        <button id="resumeBtn" class="is-secondary" type="button" hidden>继续</button>
         <button id="decreaseBtn" type="button">减少</button>
+        <div id="controls" class="controls">
+          <button id="pauseBtn" class="is-gray" type="button" hidden>暂停</button>
+          <button id="resumeBtn" class="is-secondary" type="button" hidden>继续</button>
+        </div>
       </div>
     </main>
 
@@ -129,6 +161,7 @@
       const decreaseBtn = document.getElementById("decreaseBtn");
       const timerEl = document.getElementById("timer");
       const doneEl = document.getElementById("done");
+      const controlsEl = document.getElementById("controls");
       const pauseBtn = document.getElementById("pauseBtn");
       const resumeBtn = document.getElementById("resumeBtn");
 
@@ -274,9 +307,23 @@
         const isDone = count <= 0;
         countEl.hidden = isDone;
         doneEl.hidden = !isDone;
-        decreaseBtn.hidden = isDone;
-        pauseBtn.hidden = isDone || !isTimerRunning;
-        resumeBtn.hidden = isDone || isTimerRunning || elapsedMs === 0;
+        decreaseBtn.disabled = isDone;
+        decreaseBtn.style.visibility = isDone ? "hidden" : "visible";
+
+        controlsEl.style.visibility = isDone ? "hidden" : "visible";
+
+        if (isDone) {
+          pauseBtn.hidden = true;
+          resumeBtn.hidden = true;
+        } else if (isTimerRunning) {
+          pauseBtn.hidden = false;
+          pauseBtn.disabled = false;
+          resumeBtn.hidden = true;
+        } else {
+          pauseBtn.hidden = true;
+          resumeBtn.hidden = false;
+          resumeBtn.disabled = elapsedMs === 0;
+        }
 
         if (isDone) {
           pauseTimer();
