@@ -15,8 +15,7 @@
         text-size-adjust: 100%;
       }
       .page {
-        max-width: 900px;
-        margin: 40px auto;
+        margin: 0;
         padding: 24px;
         padding-left: calc(24px + env(safe-area-inset-left));
         padding-right: calc(24px + env(safe-area-inset-right));
@@ -41,6 +40,7 @@
         list-style: none;
         padding: 0;
         margin: 0;
+        overflow-x: hidden;
       }
       .list li {
         padding: 10px 12px;
@@ -49,10 +49,12 @@
         background: #f2f4f7;
         display: flex;
         gap: 12px;
-        flex-wrap: wrap;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .time {
-        min-width: 140px;
+        min-width: 100px;
         font-weight: 600;
         color: #0f172a;
       }
