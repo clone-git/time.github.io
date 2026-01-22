@@ -1,359 +1,96 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
   <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <title>任务</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>作息表</title>
     <style>
-      :root {
-        color-scheme: light;
-      }
-
       body {
         margin: 0;
-        background: #ffffff;
-        color: #111827;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "PingFang SC",
-          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        font-family: -apple-system, "SF Pro Text", "SF Pro Display", "PingFang SC", "Noto Sans SC",
+          "Microsoft YaHei", system-ui, sans-serif;
+        color: #1a1a1a;
+        background: #f5f6f8;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
       }
-
       .page {
-        min-height: 100dvh;
-        padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
-        padding-right: 16px;
-        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-        padding-left: 16px;
-        box-sizing: border-box;
-        display: flex;
-        justify-content: stretch;
-        align-items: stretch;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 24px;
+        padding-left: calc(24px + env(safe-area-inset-left));
+        padding-right: calc(24px + env(safe-area-inset-right));
+        padding-top: calc(24px + env(safe-area-inset-top));
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
       }
-
-      .layout {
-        width: 100%;
-        margin: 0;
-        display: grid;
-        grid-template-rows: repeat(4, 1fr);
-        gap: 0;
-        flex: 1;
-        min-height: 100%;
-      }
-
-      .slot {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-      }
-
-      .timer {
-        font-size: 50px;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: 12px;
-        color: #111827;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          "Liberation Mono", "Courier New", monospace;
-        font-variant-numeric: tabular-nums;
-        font-feature-settings: "tnum";
-        display: block;
-        width: 100%;
-        min-width: 13ch;
-        line-height: 1;
-      }
-
-      .number {
-        font-size: 170px;
-        font-weight: 800;
-        line-height: 1;
-        text-align: center;
-        width: 100%;
-      }
-
-      .number.is-red {
-        color: #ef4444;
-      }
-
-      button {
-        appearance: none;
-        border: 0;
-        border-radius: 14px;
-        padding: 14px 16px;
-        font-size: 18px;
-        font-weight: 700;
-        cursor: pointer;
-        background: #16a34a;
-        color: #ffffff;
-        width: 100%;
-        height: 100%;
-        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.22);
-      }
-
-      .controls {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: stretch;
-      }
-
-      .controls button {
-        flex: 1;
-      }
-
-      button.is-secondary {
-        background: #0ea5e9;
-        box-shadow: 0 10px 20px rgba(14, 165, 233, 0.22);
-      }
-
-      button.is-gray {
-        background: rgb(171, 192, 236);
-        box-shadow: 0 10px 20px rgba(17, 24, 39, 0.22);
-      }
-
-      button:active {
-        transform: translateY(1px);
-      }
-
-      button:focus-visible {
-        outline: 3px solid rgba(22, 163, 74, 0.45);
-        outline-offset: 3px;
-      }
-
-      .done {
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        text-align: center;
-        color: #ffffff;
-        background: #16a34a;
+      .card {
+        background: #ffffff;
         border-radius: 16px;
-        padding: 18px 16px;
-        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.18);
-        width: 100%;
+        padding: 24px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 0 0 16px;
+        font-size: 24px;
+      }
+      h2 {
+        margin: 24px 0 12px;
+        font-size: 18px;
+      }
+      .list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .list li {
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border-radius: 10px;
+        background: #f2f4f7;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .time {
+        min-width: 140px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .note {
+        color: #475569;
       }
     </style>
   </head>
   <body>
-    <main class="page" aria-live="polite">
-      <div class="layout">
-        <div class="slot">
-          <div id="timer" class="timer">00:00.000</div>
-        </div>
-        <div class="slot">
-          <div id="count" class="number is-red">200</div>
-          <div id="done" class="done" hidden>任务完成</div>
-        </div>
-        <div id="controls" class="controls">
-          <button id="pauseBtn" class="is-gray" type="button" hidden>暂停</button>
-          <button id="resumeBtn" class="is-secondary" type="button" hidden>继续</button>
-        </div>
-        <button id="decreaseBtn" type="button">减少</button>
+    <div class="page">
+      <div class="card">
+        <h1>作息表</h1>
+        <h2>工作日作息（21:00以后）</h2>
+        <ul class="list">
+          <li><span class="time">21:00-22:00</span><span class="note">时段1 刷题40-50题</span></li>
+          <li><span class="time">22:00-22:10</span><span class="note">休息</span></li>
+          <li><span class="time">22:10-23:10</span><span class="note">时段2 刷题40-50题</span></li>
+          <li><span class="time">23:10-23:20</span><span class="note">休息</span></li>
+          <li><span class="time">23:20-00:00</span><span class="note">时段3 复盘20-30题</span></li>
+          <li><span class="time">00:00</span><span class="note">入睡</span></li>
+        </ul>
+
+        <h2>周末作息（不限时长）</h2>
+        <ul class="list">
+          <li><span class="time">07:30</span><span class="note">起床与简单拉伸</span></li>
+          <li><span class="time">08:00</span><span class="note">早餐</span></li>
+          <li><span class="time">08:30-10:30</span><span class="note">时段1 刷题120-150题</span></li>
+          <li><span class="time">10:30-10:45</span><span class="note">休息</span></li>
+          <li><span class="time">10:45-12:45</span><span class="note">时段2 刷题120-150题</span></li>
+          <li><span class="time">12:45-14:00</span><span class="note">午饭与午休</span></li>
+          <li><span class="time">14:00-16:00</span><span class="note">时段3 刷题120-150题</span></li>
+          <li><span class="time">16:00-16:15</span><span class="note">休息</span></li>
+          <li><span class="time">16:15-18:15</span><span class="note">时段4 刷题120-150题</span></li>
+          <li><span class="time">18:15-19:30</span><span class="note">晚饭与放松</span></li>
+          <li><span class="time">19:30-21:30</span><span class="note">时段5 复盘80-120题</span></li>
+          <li><span class="time">22:30</span><span class="note">入睡</span></li>
+        </ul>
       </div>
-    </main>
-
-    <script>
-      const countEl = document.getElementById("count");
-      const decreaseBtn = document.getElementById("decreaseBtn");
-      const timerEl = document.getElementById("timer");
-      const doneEl = document.getElementById("done");
-      const controlsEl = document.getElementById("controls");
-      const pauseBtn = document.getElementById("pauseBtn");
-      const resumeBtn = document.getElementById("resumeBtn");
-
-      const STORAGE_KEY = "task_count";
-      const STORAGE_TIMER_KEY = "task_timer";
-
-      function getInitialTimerState() {
-        const raw = localStorage.getItem(STORAGE_TIMER_KEY);
-        if (raw === null) {
-          return {
-            elapsedMs: 0,
-            isRunning: false,
-            lastStartAtMs: 0,
-          };
-        }
-
-        try {
-          const parsed = JSON.parse(raw);
-          const elapsedMs =
-            typeof parsed?.elapsedMs === "number" && Number.isFinite(parsed.elapsedMs)
-              ? Math.max(0, Math.floor(parsed.elapsedMs))
-              : 0;
-          const isRunning = parsed?.isRunning === true;
-          const lastStartAtMs =
-            typeof parsed?.lastStartAtMs === "number" && Number.isFinite(parsed.lastStartAtMs)
-              ? Math.max(0, Math.floor(parsed.lastStartAtMs))
-              : 0;
-
-          return {
-            elapsedMs,
-            isRunning,
-            lastStartAtMs,
-          };
-        } catch {
-          return {
-            elapsedMs: 0,
-            isRunning: false,
-            lastStartAtMs: 0,
-          };
-        }
-      }
-
-      function persistTimerState() {
-        localStorage.setItem(
-          STORAGE_TIMER_KEY,
-          JSON.stringify({
-            elapsedMs,
-            isRunning: isTimerRunning,
-            lastStartAtMs,
-          }),
-        );
-      }
-
-      function formatDuration(totalMs) {
-        const safeMs = Math.max(0, Math.floor(totalMs));
-        const milliseconds = safeMs % 1000;
-        const totalSeconds = Math.floor(safeMs / 1000);
-        const seconds = totalSeconds % 60;
-        const totalMinutes = Math.floor(totalSeconds / 60);
-        const minutes = totalMinutes % 60;
-        const hours = Math.floor(totalMinutes / 60);
-
-        if (hours > 0) {
-          return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
-        }
-
-        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
-      }
-
-      function getInitialCount() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const parsed = raw === null ? NaN : Number.parseInt(raw, 10);
-
-        if (Number.isFinite(parsed) && parsed >= 0) {
-          return parsed;
-        }
-
-        return 200;
-      }
-
-      function persistCount(nextCount) {
-        localStorage.setItem(STORAGE_KEY, String(nextCount));
-      }
-
-      let count = getInitialCount();
-      const initialTimerState = getInitialTimerState();
-      let elapsedMs = initialTimerState.elapsedMs;
-      let isTimerRunning = initialTimerState.isRunning;
-      let lastStartAtMs = initialTimerState.lastStartAtMs;
-      let timerIntervalId = null;
-
-      function updateTimerText() {
-        timerEl.textContent = formatDuration(
-          elapsedMs + (isTimerRunning ? Date.now() - lastStartAtMs : 0),
-        );
-      }
-
-      function startTimer() {
-        if (isTimerRunning) return;
-        isTimerRunning = true;
-        lastStartAtMs = Date.now();
-        persistTimerState();
-        updateTimerText();
-        timerIntervalId = window.setInterval(updateTimerText, 50);
-      }
-
-      function pauseTimer() {
-        if (!isTimerRunning) return;
-        elapsedMs += Date.now() - lastStartAtMs;
-        isTimerRunning = false;
-        lastStartAtMs = 0;
-        if (timerIntervalId !== null) {
-          window.clearInterval(timerIntervalId);
-          timerIntervalId = null;
-        }
-        persistTimerState();
-        updateTimerText();
-      }
-
-      function initTimerFromStorage() {
-        if (!isTimerRunning) {
-          updateTimerText();
-          return;
-        }
-
-        const nowMs = Date.now();
-        if (lastStartAtMs <= 0 || lastStartAtMs > nowMs) {
-          isTimerRunning = false;
-          lastStartAtMs = 0;
-          persistTimerState();
-          updateTimerText();
-          return;
-        }
-
-        updateTimerText();
-        timerIntervalId = window.setInterval(updateTimerText, 50);
-      }
-
-      function render() {
-        countEl.textContent = String(count);
-        updateTimerText();
-
-        const isDone = count <= 0;
-        countEl.hidden = isDone;
-        doneEl.hidden = !isDone;
-        decreaseBtn.disabled = isDone;
-        decreaseBtn.style.visibility = isDone ? "hidden" : "visible";
-
-        controlsEl.style.visibility = isDone ? "hidden" : "visible";
-
-        if (isDone) {
-          pauseBtn.hidden = true;
-          resumeBtn.hidden = true;
-        } else if (isTimerRunning) {
-          pauseBtn.hidden = false;
-          pauseBtn.disabled = false;
-          resumeBtn.hidden = true;
-        } else {
-          pauseBtn.hidden = true;
-          resumeBtn.hidden = false;
-          resumeBtn.disabled = elapsedMs === 0;
-        }
-
-        if (isDone) {
-          pauseTimer();
-        }
-      }
-
-      function handleDecrease() {
-        startTimer();
-        count = Math.max(0, count - 1);
-        persistCount(count);
-        render();
-      }
-
-      function handlePause() {
-        pauseTimer();
-        render();
-      }
-
-      function handleResume() {
-        startTimer();
-        render();
-      }
-
-      decreaseBtn.addEventListener("click", handleDecrease);
-      pauseBtn.addEventListener("click", handlePause);
-      resumeBtn.addEventListener("click", handleResume);
-      persistCount(count);
-      initTimerFromStorage();
-      render();
-    </script>
+    </div>
   </body>
-</html>
-
+  </html>
